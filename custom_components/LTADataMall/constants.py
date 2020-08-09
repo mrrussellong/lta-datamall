@@ -29,6 +29,7 @@ CONF_END_TIME = "endTime"
 CONF_BUS_STOP_NUMBER = "busStopNumber"
 CONF_SERVICE_NUMBER = "serviceNumber"
 CONF_WINDOW = "window"
+CONF_DESCRIPTION = "description"
 
 ATTR_SERVICE_NUMBER = "Service Number"
 ATTR_BUS_STOP_NUMBER = "Bus Stop Number"
@@ -48,6 +49,7 @@ SENSOR_SCHEMA = vol.Schema({
     vol.Required(CONF_NAME): cv.string,
     vol.Required(CONF_BUS_STOP_NUMBER): cv.string,
     vol.Required(CONF_SERVICE_NUMBER): cv.string,
+    vol.Optional(CONF_DESCRIPTION): cv.string,
     vol.Optional(CONF_WINDOW): vol.All(cv.ensure_list, [WINDOW_SCHEMA]),
 })
 

@@ -23,6 +23,7 @@ from .constants import (
     ICON_TRAIN,
     CONF_BUS_STOP_NUMBER,
     CONF_SERVICE_NUMBER,
+    CONF_DESCRIPTION,
     CONF_WINDOW,
     CONF_START_TIME,
     CONF_END_TIME,
@@ -61,6 +62,7 @@ class LTADataMallTrainDisruptionSensor(Entity):
     def __init__(self, hass):
         self.__hass = hass
         self._state = "Unknown"
+        self._description = None
         pass
 
     @property
@@ -75,6 +77,13 @@ class LTADataMallTrainDisruptionSensor(Entity):
     def icon(self):
         return ICON_TRAIN
 
+    @property
+    def device_state_attributes(self):
+        """Return the state attributes."""
+        res = {}
+        res[CONF_DESCRIPTION] = self._description
+        return res
+
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Get the latest data from NEA."""
@@ -82,6 +91,7 @@ class LTADataMallTrainDisruptionSensor(Entity):
         if result is None:
             return
         status = result["value"]["Status"]
+        self._description = result["value"]
         _LOGGER.warn("train: %s", [status, result["value"]])
 
         if int(status) == 1:
@@ -101,6 +111,7 @@ class LTADataMallBusTimingSensor(Entity):
         self.__bus_stop_number = config.get(CONF_BUS_STOP_NUMBER)
         self.__service_number = config.get(CONF_SERVICE_NUMBER)
         self.__window = config.get(CONF_WINDOW)
+        self.__description = config.get(CONF_DESCRIPTION)
         self.__duration_1 = 0
         self.__duration_2 = 0
         self.__duration_3 = 0
@@ -134,6 +145,7 @@ class LTADataMallBusTimingSensor(Entity):
         res[ATTR_DURATION1] = self.__duration_1
         res[ATTR_DURATION2] = self.__duration_2
         res[ATTR_DURATION3] = self.__duration_3
+        res[CONF_DESCRIPTION] = self.__description
         res[ATTR_NAME] = self.__name
         return res
 
@@ -166,11 +178,9 @@ class LTADataMallBusTimingSensor(Entity):
     def update(self):
         """Get the latest data from NEA."""
         if not self.should_update():
-            _LOGGER.warn("update not needed for! %s", [self.bus_stop_number, self.service_number])
             self.__duration_1 = "Not updated"
             return
 
-        _LOGGER.warn("update needed for! %s", [self.bus_stop_number, self.service_number])
         result = self.__hass.data[DOMAIN].get_arrival_times(self.bus_stop_number, self.service_number)
         if result is None:
             return
@@ -202,35 +212,7 @@ class LTADataMallBusTimingSensor(Entity):
                 arrival3 = datetime.strptime(arrival3[:-3], '%Y-%m-%dT%H:%M:%S%Z')
                 a3 = int(time.mktime(arrival3.timetuple()) - now) % 3600
                 self.__duration_3 = round(a3 / 60, 2)
-            
 
-            _LOGGER.warn("arrival1: %s %s  arrival2 %s %s, arrival3: %s ",
-                arrival1,
-                self.__duration_1,
-                arrival2,
-                self.__duration_2,
-                arrival3,
-            )
-
-
-            # a1 = (arrival1.replace(tzinfo=pytz.UTC) - dt_util.utcnow())
-            # a2 = (arrival2.replace(tzinfo=pytz.UTC) - dt_util.utcnow())
-            # a3 = (arrival3.replace(tzinfo=pytz.UTC) - dt_util.utcnow())
-
-            
-
-            # _LOGGER.warn("%s arrival1: %s - %s - %s arrival2 %s - %s %s, arrival3: %s - %s - %s",
-            #     self.name,
-            #     self.__duration_1,
-            #     a1,
-            #     arrival1,
-            #     self.__duration_2,
-            #     a2,
-            #     time.mktime(arrival2.timetuple()),
-            #     self.__duration_3,
-            #     a3,
-            #     time.mktime(arrival3.timetuple()))
-        
         except Exception as e:
             _LOGGER.warn(f"Exception reading public transport connection data: {e.args} {service}")
         
