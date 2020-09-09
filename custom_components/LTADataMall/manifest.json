@@ -10,5 +10,6 @@
   ],
   "config_flow": true,
   "dependencies": [],
-  "codeowners": ["@mrrussellong"]
+  "codeowners": ["@mrrussellong"],
+  "issue_tracker": "https://github.com/mrrussellong/lta-datamall/issues"
 }
