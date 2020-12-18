@@ -160,14 +160,16 @@ class LTADataMallBusTimingSensor(Entity):
         should_proceed = False
 
         for window in self.__window:
-            startTime = window[CONF_START_TIME]
-            endTime = window[CONF_END_TIME]
+            start_time = window[CONF_START_TIME]
+            end_time = window[CONF_END_TIME]
 
-            currentStart = datetime.now().replace(hour=startTime.hour, minute=startTime.minute, second=0, microsecond=0)
-            currentEnd = datetime.now().replace(hour=endTime.hour, minute=endTime.minute, second=0, microsecond=0)
+            current_start = datetime.now().replace(
+                hour=start_time.hour, minute=start_time.minute, second=0, microsecond=0)
+            current_end = datetime.now().replace(
+                hour=end_time.hour, minute=end_time.minute, second=0, microsecond=0)
             now = datetime.now()
             
-            if currentStart < now and now < currentEnd:
+            if current_start < now and now < current_end:
                 should_proceed = should_proceed or True
                 break
 
@@ -178,11 +180,16 @@ class LTADataMallBusTimingSensor(Entity):
     def update(self):
         """Get the latest data from NEA."""
         if not self.should_update():
-            self.__duration_1 = "Not updated"
+            not_updated = "Not updated"
+            self.__duration_1 = not_updated
+            self.__duration_2 = not_updated
+            self.__duration_3 = not_updated
             return
 
         result = self.__hass.data[DOMAIN].get_arrival_times(self.bus_stop_number, self.service_number)
-        if result is None:
+        if (result is None or
+            result["Services"] is None or
+            len(result["Services"]) == 0):
             return
 
         service = result["Services"][0]
@@ -191,10 +198,10 @@ class LTADataMallBusTimingSensor(Entity):
         arrival3 = service["NextBus3"]["EstimatedArrival"]
 
         now = time.mktime(dt_util.utcnow().timetuple())
-        
+        date_format = '%Y-%m-%dT%H:%M:%S%z'
         try:
             if len(arrival1) != 0:
-                arrival1 = datetime.strptime(arrival1[:-3], '%Y-%m-%dT%H:%M:%S%Z')
+                arrival1 = datetime.strptime(arrival1, date_format)
                 a1 = int(time.mktime(arrival1.timetuple()) - now) % 3600
                 if a1 > 3400:
                     self.__duration_1 = "Arriving"
@@ -203,13 +210,13 @@ class LTADataMallBusTimingSensor(Entity):
             
 
             if len(arrival2) != 0:
-                arrival2 = datetime.strptime(arrival2[:-3], '%Y-%m-%dT%H:%M:%S%Z')
+                arrival2 = datetime.strptime(arrival2, date_format)
                 a2 = int(time.mktime(arrival2.timetuple()) - now) % 3600
                 self.__duration_2 = round(a2 / 60, 2)
             
 
             if len(arrival3) != 0:
-                arrival3 = datetime.strptime(arrival3[:-3], '%Y-%m-%dT%H:%M:%S%Z')
+                arrival3 = datetime.strptime(arrival3, date_format)
                 a3 = int(time.mktime(arrival3.timetuple()) - now) % 3600
                 self.__duration_3 = round(a3 / 60, 2)
 
