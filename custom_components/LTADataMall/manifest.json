@@ -2,11 +2,8 @@
   "domain": "LTADataMall",
   "name": "LTA DataMall",
   "documentation": "https://www.mytransport.sg/content/dam/datamall/datasets/LTA_DataMall_API_User_Guide.pdf",
-  "requirements": [
-    "datetime",
-    "integrationhelper",
-    "voluptuous"
-  ],
+  "version": "1.0.0",
+  "requirements": [],
   "config_flow": true,
   "dependencies": [],
   "codeowners": ["@mrrussellong"]

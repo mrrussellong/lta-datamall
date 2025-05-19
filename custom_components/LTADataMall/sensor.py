@@ -1,15 +1,13 @@
 """Support for LTADataMall sensors."""
 import voluptuous as vol
-import pytz
 import logging
 import homeassistant.util.dt as dt_util
 
 from datetime import datetime, timedelta
-from homeassistant.helpers import config_validation as cv, discovery
-import time 
+from homeassistant.helpers import config_validation as cv
+import time
 from homeassistant.util import Throttle
-from homeassistant.core import HomeAssistant, State
-from homeassistant.helpers.entity import Entity
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import (
     CONF_SCAN_INTERVAL,
     CONF_SENSORS,
@@ -58,7 +56,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities(devs, True)
 
 
-class LTADataMallTrainDisruptionSensor(Entity):
+class LTADataMallTrainDisruptionSensor(SensorEntity):
     def __init__(self, hass):
         self.__hass = hass
         self._state = "Unknown"
@@ -78,7 +76,7 @@ class LTADataMallTrainDisruptionSensor(Entity):
         return ICON_TRAIN
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the state attributes."""
         res = {}
         res[CONF_DESCRIPTION] = self._description
@@ -100,7 +98,7 @@ class LTADataMallTrainDisruptionSensor(Entity):
             line = result["value"]["Line"]
             self._state = f"{line} DISRUPTION!!!"
 
-class LTADataMallBusTimingSensor(Entity):
+class LTADataMallBusTimingSensor(SensorEntity):
     """Representation of a openroute service travel time sensor."""
 
     def __init__(self, hass, config):
@@ -137,7 +135,7 @@ class LTADataMallBusTimingSensor(Entity):
         return self.__duration_1
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the state attributes."""
         res = {}
         res[ATTR_BUS_STOP_NUMBER] = self.bus_stop_number

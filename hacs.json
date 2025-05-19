@@ -1,7 +1,7 @@
 {
     "name": "LTA DataMall",
     "iot_class": "Cloud Polling",
-    "homeassistant": "0.110.0",
+    "homeassistant": "2024.1.0",
     "hide_default_branch": false,
     "zip_release": false
 }
